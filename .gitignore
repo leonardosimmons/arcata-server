@@ -1,0 +1,6 @@
+# Directories
+.idea/
+app/vendor
+
+# Files
+.env

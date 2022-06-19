@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+    web:
+        image: nginx:latest
+        ports:
+            - '80:80'
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - ./app:/app
+    php:
+        build:
+            context: .
+            dockerfile: PHP.Dockerfile
+        environment:
+            - PHP_FPM_CLEAR_ENV=no
+            - JWT_ISSUER=${JWT_ISSUER}
+            - JWT_DEFAULT_ALGORITHM=${JWT_DEFAULT_ALGORITHM}
+            - JWT_DEFAULT_EXPIRATION=${JWT_DEFAULT_EXPIRATION}
+            - SESSION_REGENERATION_KEY=${SESSION_REGENERATION_KEY}
+            - MYSQL_HOST=${MYSQL_HOST}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+        volumes:
+            - ./app:/app
+    mysql:
+        image: mariadb:latest
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+        volumes:
+            - db_data:/var/lib/mysql
+        ports:
+            - '3306:3306'
+    phpmyadmin:
+        depends_on:
+            - mysql
+        image: phpmyadmin/phpmyadmin
+        restart: always
+        ports:
+            - '8080:80'
+        environment:
+            PMA_HOST: ${MYSQL_HOST}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+volumes:
+    db_data: {}
